@@ -14,7 +14,7 @@ on:
 jobs:
   build:
     name: Build & Release
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -37,19 +37,9 @@ jobs:
       - name: Build Android APK
         run: flutter build apk --release --split-per-abi --no-tree-shake-icons
 
-      - name: Build iOS app
-        run: |
-          flutter build ios --no-codesign
-          cd build/ios/iphoneos
-          mkdir Payload
-          cd Payload
-          ln -s ../Runner.app
-          cd ..
-          zip -r authintication-app-beta.ipa Payload
-
       - name: Push to Releases
         uses: ncipollo/release-action@v1
         with:
-          artifacts: "build/app/outputs/apk/release/*,build/ios/iphoneos/authintication-app-beta.ipa"
+          artifacts: "build/app/outputs/apk/release/authintication-app-beta-*-release.apk"
           tag: v1.0.${{ github.run_number }}
           token: ${{ secrets.TOKEN }}
