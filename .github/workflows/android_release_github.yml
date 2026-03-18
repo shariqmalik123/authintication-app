@@ -11,9 +11,6 @@ on:
       - master
       - develop
 
-permissions:
-  contents: write
-
 jobs:
   build:
     name: Build & Release
@@ -38,7 +35,7 @@ jobs:
         run: flutter pub get
 
       - name: Build Android APK
-        run: flutter build apk --release --no-tree-shake-icons
+        run: flutter build apk --release --split-per-abi --no-tree-shake-icons
 
       - name: Build iOS app
         run: |
@@ -48,12 +45,11 @@ jobs:
           cd Payload
           ln -s ../Runner.app
           cd ..
-          zip -r authintication-app-release.ipa Payload
+          zip -r app.ipa Payload
 
       - name: Push to Releases
-        if: ${{ github.event_name == 'push' }}
         uses: ncipollo/release-action@v1
         with:
-          artifacts: "build/app/outputs/apk/release/*,build/ios/iphoneos/authintication-app-release.ipa"
+          artifacts: "build/app/outputs/apk/release/*,build/ios/iphoneos/app.ipa"
           tag: v1.0.${{ github.run_number }}
           token: ${{ secrets.TOKEN }}
