@@ -1,0 +1,73 @@
+name: "Build & Release"
+
+on:
+  pull_request:
+    branches:
+      - main
+      - master
+  push:
+    branches:
+      - main
+      - master
+      - develop
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build & Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: "zulu"
+          java-version: "17"
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: "stable"
+          architecture: x64
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Bump build number in pubspec.yaml
+        shell: bash
+        run: |
+          set -euo pipefail
+          version_line=$(grep '^version:' pubspec.yaml | awk '{print $2}')
+          IFS='+' read -r version_name version_code <<< "$version_line"
+          version_code=$((version_code + 1))
+          new_version="${version_name}+${version_code}"
+          sed -i "s/^version: .*/version: ${new_version}/" pubspec.yaml
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add pubspec.yaml
+          git commit -m "chore: bump build to ${new_version}"
+          git push
+
+      - name: Build Android APK
+        run: flutter build apk --release --no-tree-shake-icons
+
+      - name: Build iOS app
+        run: |
+          flutter build ios --no-codesign
+          cd build/ios/iphoneos
+          mkdir Payload
+          cd Payload
+          ln -s ../Runner.app
+          cd ..
+          zip -r authintication-app-release.ipa Payload
+
+      - name: Push to Releases
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "build/app/outputs/apk/release/*,build/ios/iphoneos/authintication-app-release.ipa"
+          tag: v1.0.${{ github.run_number }}
+          token: ${{ secrets.TOKEN }}
