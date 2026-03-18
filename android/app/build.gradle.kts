@@ -1,3 +1,4 @@
+import com.android.build.api.variant.ApkVariantOutput
 import com.android.build.api.variant.FilterConfiguration
 
 plugins {
@@ -53,7 +54,7 @@ androidComponents {
             } else {
                 "authintication-app-beta-${abiFilter}-${variant.name}.apk"
             }
-            output.outputFileName.set(fileName)
+            (output as? ApkVariantOutput)?.outputFileName?.set(fileName)
         }
     }
 }
