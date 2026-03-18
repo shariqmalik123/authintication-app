@@ -1,6 +1,3 @@
-import com.android.build.api.variant.ApkVariantOutput
-import com.android.build.api.variant.FilterConfiguration
-
 plugins {
     id("com.android.application")
     id("kotlin-android")
@@ -39,22 +36,6 @@ android {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("debug")
-        }
-    }
-}
-
-androidComponents {
-    onVariants { variant ->
-        variant.outputs.forEach { output ->
-            val abiFilter = output.filters
-                .firstOrNull { it.filterType == FilterConfiguration.FilterType.ABI }
-                ?.identifier
-            val fileName = if (abiFilter == null) {
-                "authintication-app-beta-${variant.name}.apk"
-            } else {
-                "authintication-app-beta-${abiFilter}-${variant.name}.apk"
-            }
-            (output as? ApkVariantOutput)?.outputFileName?.set(fileName)
         }
     }
 }
