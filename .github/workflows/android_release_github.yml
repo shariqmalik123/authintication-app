@@ -17,7 +17,7 @@ permissions:
 jobs:
   build:
     name: Build & Release
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -38,6 +38,7 @@ jobs:
         run: flutter pub get
 
       - name: Bump build number in pubspec.yaml
+        if: ${{ github.event_name == 'push' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -66,6 +67,7 @@ jobs:
           zip -r authintication-app-release.ipa Payload
 
       - name: Push to Releases
+        if: ${{ github.event_name == 'push' }}
         uses: ncipollo/release-action@v1
         with:
           artifacts: "build/app/outputs/apk/release/*,build/ios/iphoneos/authintication-app-release.ipa"

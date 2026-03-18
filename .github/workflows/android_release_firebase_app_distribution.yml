@@ -27,8 +27,15 @@ jobs:
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
 
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: "stable"
+          architecture: x64
+
       - name: Make gradlew executable
         run: chmod +x ./gradlew
+        working-directory: android
 
       - name: Bump build number in pubspec.yaml
         shell: bash
@@ -47,6 +54,7 @@ jobs:
 
       - name: Execute Gradle command - assembleDebug
         run: ./gradlew assembleDebug
+        working-directory: android
 
       - name: Upload Artifact to Firebase App Distribution
         uses: wzieba/Firebase-Distribution-Github-Action@v1
@@ -54,5 +62,5 @@ jobs:
           appId: ${{ secrets.FIREBASE_APP_ID }}
           serviceCredentialsFileContent: ${{ secrets.CREDENTIAL_FILE_CONTENT }}
           groups: testers
-          file: app/build/outputs/apk/debug/authintication-app-beta.apk
+          file: android/app/build/outputs/apk/debug/app-debug.apk
           releaseNotes: ${{ inputs.release_notes }}
